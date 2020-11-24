@@ -36,10 +36,15 @@
         "url": "https://github.com/ashleydavis/react-outliner/issues"
     },
     "homepage": "https://github.com/ashleydavis/react-outliner#readme",
-    "dependencies": {},
+    "dependencies": {
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1"
+    },
     "devDependencies": {
         "@types/jest": "^26.0.15",
         "@types/node": "^14.14.9",
+        "@types/react": "^17.0.0",
+        "@types/react-dom": "^17.0.0",
         "jest": "^26.6.3",
         "nodemon": "^2.0.6",
         "source-map-support": "0.5.19",
