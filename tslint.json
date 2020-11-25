@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "object-literal-shorthand": false,
         "max-line-length": false,
         "no-trailing-whitespace": false,
         "no-console": false,
