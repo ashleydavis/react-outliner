@@ -19,7 +19,7 @@ describe("outliner", () => {
         expect(element.html()).toEqual(`<div><div class="note" contenteditable="true"></div></div>`);
     });
 
-    it.only("can add note", () => {
+    it("can add note", () => {
         
         const element = shallow(
             <Outliner 
