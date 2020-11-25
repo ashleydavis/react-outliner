@@ -1,6 +1,6 @@
 import { v4 } from "node-uuid";
 import * as React from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 
 //
 // Represents a note in the outliner.
@@ -65,8 +65,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     // Reorders a list of notes that has been drag and drop rearranged.
     //
-    private reorder(list: INote[], startIndex: number, endIndex: number) {
-        const result = Array.from(list);
+    private reorder(notes: INote[], startIndex: number, endIndex: number) {
+        const result = Array.from(notes);
         const [removed] = result.splice(startIndex, 1);
         result.splice(endIndex, 0, removed);
         return result;
@@ -75,7 +75,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     // Event raised when drag and drop has completed.
     //
-    private onDragEnd(result: any) {
+    private onDragEnd(result: DropResult, provided: ResponderProvided): void {
         if (!result.destination) {
             return; // Dropped outside the list.
         }
@@ -94,7 +94,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     // Event raise on key down.
     //
-    private onKeyDown(evt: any, index: number) {
+    private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, index: number) {
         if (evt.key === "Enter") {
             this.setState({
                 notes: this.state.notes.concat([DEFAULT_NOTE]),
@@ -117,7 +117,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         return (
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
-                    {(provided: any, snapshot: any) => (
+                    {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
                         <div
                             {...provided.droppableProps}
                             ref={provided.innerRef}
@@ -128,7 +128,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                     draggableId={note.id} 
                                     index={index}
                                     >
-                                    {(provided: any, snapshot: any) => (
+                                    {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
                                         <div 
                                             key={index}
                                             ref={provided.innerRef}
