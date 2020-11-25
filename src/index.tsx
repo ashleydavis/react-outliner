@@ -152,6 +152,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                 onKeyDown={evt => this.onKeyDown(evt, index)}
                                                 style={{
                                                     marginLeft: "15px",
+                                                    marginRight: "5px",
+                                                    flexGrow: 1,
                                                 }}
                                                 >
                                                 {note.text}
