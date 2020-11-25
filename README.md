@@ -1,114 +1,38 @@
-# typescript-template
+# react-outliner
 
-A template for a TypeScript app. To make it easier to start a new app without having to go through all the configuration.
+A Workflowy-style outliner UI component for React.
 
-## Features
+I'm live streaming development of this component on Twitch!
 
-- Example module.
-- Example command line app (installable via npm install -g)
-- Testing using Jest.
-- Linting using tslint.
-- Debugging setup for VS Code.
+Check Twitch for the next live stream:
 
-## Usage
+[https://www.twitch.tv/ashleydavis](https://www.twitch.tv/ashleydavis)
 
-When you want to start a new TypeScript app:
+See my YouTube channel to watch previous live streams:
 
-- Copy this repo
-- Search and replace 'typescript-template' to 'your-module-name' across the entire repo
-- Install your own custom dependencies
-- Add your custom code.
-- Add to your own Github or Bitbucket repo (you can npm install from a Git repo! Even a private one!)
-- If necessary, publish to npm using `npm publish`.
+[https://www.youtube.com/c/thedatawrangler](https://www.youtube.com/c/thedatawrangler)
 
-You now have a reusable code module and/or command line app that you can 'npm install' and share with your team mates.
+Follow me on Twitter for updates and announcements:
 
-## Get the code
+[https://twitter.com/ashleydavis75](https://twitter.com/ashleydavis75)
 
-Clone or download and unpack the repo.
+## Use it
 
-Install local dependencies
+Install it in your React application:
 
-    cd your-module-name
-    npm install
-
-## Installation
-
-Once you publish you can install via npm and use it from TypeScript or JavaScript or from the command line.
-
-### From code
-
-Import and use it (in a TypeScript file):
-
-```typescript
-import { ExampleClass } from 'your-module-name';
-
-var example = new ExampleClass();
-console.log(example.returnsTrue());
+```bash
+npm install --save react-outliner
 ```
 
-Import and use it (from JavaScript):
+Import it in your React code:
 
 ```javascript
-var yourModule = require('your-module-name');
-var ExampleClass = yourModule.ExampleClass;
-
-var example = new ExampleClass();
-console.log(example.returnsTrue());
+import { Outliner } from "react-outliner";
 ```
 
-### From command line
+Use it in your `render` function:
 
-You can also run your published module as a command line app.
+```javascript
+    <Outliner />
+```
 
-For example, install it globally:
-
-    npm install -g your-module-name
-
-Then run it:
-
-    your-module-name-cli [args]
-
-## Building the code
-
-Open folder in Visual Studio Code and hit Ctrl+Shift+B
-
-Or
-
-    cd typescript-template
-    npm run build
-
-## Debugging
-
-- Open in Visual Studio Code.
-- Select 'Main' debug configuration.
-- Select the 'Test All' or 'Test Current' debug configuration to debug all tests or the current test file.
-- Set your breakpoints.
-- Hit F5 to run.
-
-## Build and run
-
-Compile the application:
-
-    npm run build
-
-The run the compiled JavaScript:
-
-    npm start
-
-## Running without building
-
-Run the command line app directly:
-
-    npm start:dev
-
-Run tests directly:
-
-    npm test
-
-Or:
-
-    npm run test:watch
-
-
-**Checkout** package.json for more scripts!

@@ -1,6 +1,6 @@
 {
     "name": "react-outliner",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "A React UI component for typing notes.",
     "main": "build/index.js",
     "types": "build/index.d.ts",
@@ -17,7 +17,6 @@
         "build:watch": "tsc --watch",
         "cbw": "npm run clean-build:watch",
         "clean-build:watch": "npm run clean-build && npm run build:watch",
-        "prepublishOnly": "npm run clean && npm test && npm run build",
         "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
         "pretest": "npm run lint",
         "t": "npm run test",
