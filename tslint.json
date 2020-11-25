@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "no-shadowed-variable": false,
         "object-literal-shorthand": false,
         "max-line-length": false,
         "no-trailing-whitespace": false,

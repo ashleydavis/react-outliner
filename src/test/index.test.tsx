@@ -19,22 +19,30 @@ describe("outliner", () => {
         expect(element.html()).toEqual(`<div><div class="note" contenteditable="true"></div></div>`);
     });
 
-    it("can add note", () => {
+    it.only("can add note", () => {
         
         const element = shallow(
             <Outliner 
-                notes={[ { text: "Hello computer!" } ]}
+                notes={[ { id: "1", text: "Hello computer!" } ]}
                 />
         );
 
-        expect(element.html()).toEqual(`<div><div class="note" contenteditable="true">Hello computer!</div></div>`);
+        console.log(element.debug());
+
+        const notes = element.find(".note");
+        console.log(notes.debug());  
+        console.log(notes.length);  
+
+        // expect(element.find(".note"))
+
+        //expect(element.html()).toEqual(`<div><div class="note" contenteditable="true">Hello computer!</div></div>`);
     });
 
     it("can add notes", () => {
         
         const element = shallow(
             <Outliner 
-                notes={[ { text: "Note1" }, { text: "Note2" } ]}
+                notes={[ { id: "1", text: "Note1" }, { id: "2", text: "Note2" } ]}
                 />
         );
 
