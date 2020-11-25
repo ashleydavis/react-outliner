@@ -58,63 +58,69 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         this.state = {
             notes: notes,
         };
+
+        this.onDragEnd = this.onDragEnd.bind(this);
+    }
+
+    //
+    // Reorders a list of notes that has been drag and drop rearranged.
+    //
+    private reorder(list: INote[], startIndex: number, endIndex: number) {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        return result;
+    }     
+
+    //
+    // Event raised when drag and drop has completed.
+    //
+    private onDragEnd(result: any) {
+        if (!result.destination) {
+            return; // Dropped outside the list.
+        }
+      
+        const notes = this.reorder(
+            this.state.notes,
+            result.source.index,
+            result.destination.index
+        );
+      
+        this.setState({
+            notes: notes,
+        });                    
+    }
+
+    //
+    // Event raise on key down.
+    //
+    private onKeyDown(evt: any, index: number) {
+        if (evt.key === "Enter") {
+            this.setState({
+                notes: this.state.notes.concat([DEFAULT_NOTE]),
+            });
+            evt.preventDefault();
+        }
+
+        if (evt.key === "Delete" && evt.ctrlKey) {
+            const notes = this.state.notes.slice();
+            notes.splice(index, 1);
+            this.setState({
+                notes: notes,
+            });
+            evt.preventDefault();
+        }
     }
 
     render() {
-        const getListStyle = (isDraggingOver: boolean) => ({
-            background: isDraggingOver ? "lightblue" : "lightgrey",
-            padding: 8,
-            width: 250,
-        });
-
-        const getItemStyle = (isDragging: any, draggableStyle: any) => ({
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-
-            // some basic styles to make the items look a bit nicer
-            userSelect: "none",
-            padding: 8 * 2,
-            margin: `0 0 ${8}px 0`,
-          
-            // change background colour if dragging
-            background: isDragging ? "lightgreen" : "grey",
-          
-            // styles we need to apply on draggables
-            ...draggableStyle,
-        });        
-
-        const reorder = (list: INote[], startIndex: number, endIndex: number) => {
-            const result = Array.from(list);
-            const [removed] = result.splice(startIndex, 1);
-            result.splice(endIndex, 0, removed);
-            return result;
-        };        
 
         return (
-            <DragDropContext 
-                onDragEnd={(result: any) => {
-                    if (!result.destination) {
-                        return; // Dropped outside the list.
-                    }
-                  
-                    const notes = reorder(
-                        this.state.notes,
-                        result.source.index,
-                        result.destination.index
-                    );
-                  
-                    this.setState({
-                        notes: notes,
-                    });                    
-                }}
-                >
+            <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
                     {(provided: any, snapshot: any) => (
                         <div
                             {...provided.droppableProps}
                             ref={provided.innerRef}
-                            style={getListStyle(snapshot.isDraggingOver)}
                             >
                             {this.state.notes.map((note, index) => (
                                 <Draggable 
@@ -128,10 +134,13 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
-                                            style={getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                              )}
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                    
+                                                ...provided.draggableProps.style,
+                                            }}
                                             >
                                             <svg width="20" height="20" >
                                                 <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
@@ -140,23 +149,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                 className="note"
                                                 contentEditable
                                                 suppressContentEditableWarning
-                                                onKeyDown={evt => {
-                                                    if (evt.key === "Enter") {
-                                                        this.setState({
-                                                            notes: this.state.notes.concat([DEFAULT_NOTE]),
-                                                        });
-                                                        evt.preventDefault();
-                                                    }
-
-                                                    if (evt.key === "Delete" && evt.ctrlKey) {
-                                                        const notes = this.state.notes.slice();
-                                                        notes.splice(index, 1);
-                                                        this.setState({
-                                                            notes: notes,
-                                                        });
-                                                        evt.preventDefault();
-                                                    }
-                                                }}
+                                                onKeyDown={evt => this.onKeyDown(evt, index)}
                                                 style={{
                                                     marginLeft: "15px",
                                                 }}
