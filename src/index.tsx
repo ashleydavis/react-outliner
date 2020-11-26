@@ -1,5 +1,6 @@
 import * as React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import { NoteEditor } from "./lib/note-editor";
 
 //
 // Represents a note in the outliner.
@@ -229,32 +230,6 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         });
     }
 
-    //
-    // Event raise on key down.
-    //
-    private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, noteIndex: number) {
-
-        if (evt.key === "Enter") {
-            this.createNote(noteIndex);
-            evt.preventDefault();
-        }
-
-        if (evt.key === "Delete" && evt.ctrlKey) {
-            this.deleteNote(noteIndex);
-            evt.preventDefault();
-        }
-
-        if (evt.key === "Tab") {
-            if (evt.shiftKey) {
-                this.unindentNote(noteIndex);
-            }
-            else {
-                this.indentNote(noteIndex);
-            }
-            evt.preventDefault();
-        }
-    }
-
     render() {
 
         return (
@@ -289,21 +264,13 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                             <svg width="20" height="20" >
                                                 <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
                                             </svg>
-                                            <div
-                                                className="note"
-                                                contentEditable
-                                                suppressContentEditableWarning
-                                                onKeyDown={evt => this.onKeyDown(evt, index)}
-                                                style={{
-                                                    marginLeft: "15px",
-                                                    marginRight: "5px",
-                                                    flexGrow: 1,
-                                                    outline: "none",
-                                                    cursor: "text",
-                                                }}
-                                                >
-                                                {note.text}
-                                            </div>
+                                            {<NoteEditor
+                                                note={note}
+                                                onCreateNote={() => this.createNote(index)}
+                                                onDeleteNote={() => this.deleteNote(index)}
+                                                onIndentNote={() => this.indentNote(index)}
+                                                onUnindentNote={() => this.unindentNote(index)}
+                                                />}
                                         </div>
                                     )}
                                 </Draggable>
