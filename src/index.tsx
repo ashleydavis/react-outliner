@@ -109,65 +109,99 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     }
 
     //
+    // Creates a new note.
+    //
+    private createNote(noteIndex: number): void {
+        const existingNote = this.state.notes[noteIndex];
+        const newNote = makeNote("", existingNote.indentLevel);
+        const notes = this.state.notes.slice();
+        notes.splice(noteIndex+1, 0, newNote);
+        this.setState({
+            notes: notes,
+        });
+    }
+
+    //
+    // Deletes a note.
+    //
+    private deleteNote(noteIndex: number): void {
+        const notes = this.state.notes.slice();
+        const noteToDelete = this.state.notes[noteIndex];
+        const parentIndentLevel = noteToDelete.indentLevel === undefined ? 0 : noteToDelete.indentLevel;
+        const childNoteIndex = noteIndex + 1;
+        while (childNoteIndex < notes.length) {
+            const childNote = notes[childNoteIndex];
+            if (childNote.indentLevel === undefined) {
+                break;
+            }
+
+            if (childNote.indentLevel <= parentIndentLevel) {
+                break;
+            }
+
+            notes.splice(childNoteIndex, 1);
+        }
+        
+        notes.splice(noteIndex, 1);
+        this.setState({
+            notes: notes,
+        });
+    }
+
+    //
+    // Indents a note one level.
+    //
+    private indentNote(noteIndex: number): void {
+        const note = this.state.notes[noteIndex];
+        if (note.indentLevel === undefined) {
+            note.indentLevel = 1;
+        }
+        else {
+            note.indentLevel += 1;
+        }
+
+        this.setState({
+            notes: this.state.notes,
+        });
+    }
+
+    //
+    // Unindents a note one level.
+    //
+    private unindentNote(noteIndex: number): void {
+        const note = this.state.notes[noteIndex];
+        if (note.indentLevel !== undefined &&
+            note.indentLevel > 0) {
+            note.indentLevel -= 1;
+        }
+
+        this.setState({
+            notes: this.state.notes,
+        });
+    }
+
+    //
     // Event raise on key down.
     //
-    private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, index: number) {
+    private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, noteIndex: number) {
 
         if (evt.key === "Enter") {
-            const existingNote = this.state.notes[index];
-            const newNote = makeNote("", existingNote.indentLevel);
-            const notes = this.state.notes.slice();
-            notes.splice(index+1, 0, newNote);
-            this.setState({
-                notes: notes,
-            });
+            this.createNote(noteIndex);
             evt.preventDefault();
         }
 
         if (evt.key === "Delete" && evt.ctrlKey) {
-            const notes = this.state.notes.slice();
-            const noteToDelete = this.state.notes[index];
-            const parentIndentLevel = noteToDelete.indentLevel === undefined ? 0 : noteToDelete.indentLevel;
-            const childNoteIndex = index + 1;
-            while (childNoteIndex < notes.length) {
-                const childNote = notes[childNoteIndex];
-                if (childNote.indentLevel === undefined) {
-                    break;
-                }
-
-                if (childNote.indentLevel <= parentIndentLevel) {
-                    break;
-                }
-
-                notes.splice(childNoteIndex, 1);
-            }
-            
-            notes.splice(index, 1);
-            this.setState({
-                notes: notes,
-            });
+            this.deleteNote(noteIndex);
             evt.preventDefault();
         }
 
         if (evt.key === "Tab") {
-            const note = this.state.notes[index];
             if (evt.shiftKey) {
-                if (note.indentLevel !== undefined &&
-                    note.indentLevel > 0) {
-                    note.indentLevel -= 1;
-                }
+                this.unindentNote(noteIndex);
             }
             else {
-                if (note.indentLevel === undefined) {
-                    note.indentLevel = 1;
-                }
-                else {
-                    note.indentLevel += 1;
-                }
+                this.indentNote(noteIndex);
             }
-            this.setState({
-                notes: this.state.notes,
-            });
             evt.preventDefault();
         }
     }
