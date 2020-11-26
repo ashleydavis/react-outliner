@@ -258,6 +258,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                     marginLeft: "15px",
                                                     marginRight: "5px",
                                                     flexGrow: 1,
+                                                    outline: "none",
                                                 }}
                                                 >
                                                 {note.text}
