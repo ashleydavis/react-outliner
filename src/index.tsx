@@ -14,6 +14,11 @@ export interface INote {
     // The text for the note.
     //
     text: string;
+
+    //
+    // The indented level of the note, indicating it's position in the hierarchies notes.
+    //
+    indentLevel?: number;
 }
 
 export interface IOutlinerProps {
@@ -30,14 +35,25 @@ export interface IOutlinerState {
     notes: INote[];
 }
 
-function makeNote(text: string): INote {
+function makeNote(text: string, indentLevel?: number): INote {
     return {
         id: v4(),
         text: text,
+        indentLevel: indentLevel,
     };
 }
 
-const DEFAULT_NOTES = [ makeNote("Note 1"), makeNote("Note 2"), makeNote("Note 3") ];
+const INDENT_STEP = 35;
+
+const DEFAULT_NOTES = [ 
+    makeNote("Note 1"), 
+    makeNote("Note 2"), 
+        makeNote("Child note 1", 1), 
+            makeNote("Grandchild note 1", 2), 
+            makeNote("Grandchild note 2", 2), 
+        makeNote("Child note 2", 1), 
+    makeNote("Note 3"),
+];
 
 export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
 
@@ -135,6 +151,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                 display: "flex",
                                                 flexDirection: "row",
                                                 alignItems: "center",
+                                                marginLeft: note.indentLevel === undefined ? "0px" : `${note.indentLevel * INDENT_STEP}px`,
                                     
                                                 ...provided.draggableProps.style,
                                             }}
