@@ -92,6 +92,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         if (!result.destination) {
             return; // Dropped outside the list.
         }
+
+        const siblingNote = this.state.notes[result.destination.index];
+        const childNote = this.state.notes[result.source.index];
+        childNote.indentLevel = siblingNote.indentLevel;
       
         const notes = this.reorder(
             this.state.notes,
@@ -110,14 +114,34 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, index: number) {
 
         if (evt.key === "Enter") {
+            const existingNote = this.state.notes[index];
+            const newNote = makeNote("", existingNote.indentLevel);
+            const notes = this.state.notes.slice();
+            notes.splice(index+1, 0, newNote);
             this.setState({
-                notes: this.state.notes.concat([ makeNote("") ]),
+                notes: notes,
             });
             evt.preventDefault();
         }
 
         if (evt.key === "Delete" && evt.ctrlKey) {
             const notes = this.state.notes.slice();
+            const noteToDelete = this.state.notes[index];
+            const parentIndentLevel = noteToDelete.indentLevel === undefined ? 0 : noteToDelete.indentLevel;
+            const childNoteIndex = index + 1;
+            while (childNoteIndex < notes.length) {
+                const childNote = notes[childNoteIndex];
+                if (childNote.indentLevel === undefined) {
+                    break;
+                }
+
+                if (childNote.indentLevel <= parentIndentLevel) {
+                    break;
+                }
+
+                notes.splice(childNoteIndex, 1);
+            }
+            
             notes.splice(index, 1);
             this.setState({
                 notes: notes,
