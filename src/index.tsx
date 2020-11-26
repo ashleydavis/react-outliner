@@ -165,6 +165,26 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             return;
         }
 
+        //
+        // Indent all the children of the node.
+        //
+        for (let childIndex = noteIndex+1; childIndex < this.state.notes.length; ++childIndex) {
+            const child = this.state.notes[childIndex];
+            if (child.indentLevel > note.indentLevel) {
+                //
+                // This is a child!
+                // Indent it as as well as the parent.
+                //
+                child.indentLevel += 1;
+            }
+            else {
+                //
+                // No more children!
+                //
+                break;
+            }
+        }
+
         note.indentLevel += 1;
 
         this.setState({
