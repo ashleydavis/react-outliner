@@ -145,6 +145,13 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         
         // Remove the note the user wants to delete.
         notes.splice(noteIndex, 1);
+
+        if (noteIndex > 0) {
+            // Now focus the previous note.
+            const prevNote = notes[noteIndex-1];
+            prevNote.hasFocus = true;
+        }
+
         this.setState({
             notes: notes,
         });
