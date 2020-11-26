@@ -259,6 +259,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                     marginRight: "5px",
                                                     flexGrow: 1,
                                                     outline: "none",
+                                                    cursor: "text",
                                                 }}
                                                 >
                                                 {note.text}
