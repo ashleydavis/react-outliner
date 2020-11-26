@@ -18,7 +18,7 @@ export interface INote {
     //
     // The indented level of the note, indicating it's position in the hierarchies notes.
     //
-    indentLevel?: number;
+    indentLevel: number;
 }
 
 export interface IOutlinerProps {
@@ -35,7 +35,7 @@ export interface IOutlinerState {
     notes: INote[];
 }
 
-function makeNote(text: string, indentLevel?: number): INote {
+function makeNote(text: string, indentLevel: number): INote {
     return {
         id: v4(),
         text: text,
@@ -46,13 +46,13 @@ function makeNote(text: string, indentLevel?: number): INote {
 const INDENT_STEP = 35;
 
 const DEFAULT_NOTES = [ 
-    makeNote("Note 1"), 
-    makeNote("Note 2"), 
+    makeNote("Note 1", 0), 
+    makeNote("Note 2", 0), 
         makeNote("Child note 1", 1), 
             makeNote("Grandchild note 1", 2), 
             makeNote("Grandchild note 2", 2), 
         makeNote("Child note 2", 1), 
-    makeNote("Note 3"),
+    makeNote("Note 3", 0),
 ];
 
 export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
@@ -127,14 +127,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     private deleteNote(noteIndex: number): void {
         const notes = this.state.notes.slice();
         const noteToDelete = this.state.notes[noteIndex];
-        const parentIndentLevel = noteToDelete.indentLevel === undefined ? 0 : noteToDelete.indentLevel;
+        const parentIndentLevel = noteToDelete.indentLevel;
         const childNoteIndex = noteIndex + 1;
         while (childNoteIndex < notes.length) {
             const childNote = notes[childNoteIndex];
-            if (childNote.indentLevel === undefined) {
-                break;
-            }
-
             if (childNote.indentLevel <= parentIndentLevel) {
                 break;
             }
@@ -153,12 +149,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private indentNote(noteIndex: number): void {
         const note = this.state.notes[noteIndex];
-        if (note.indentLevel === undefined) {
-            note.indentLevel = 1;
-        }
-        else {
-            note.indentLevel += 1;
-        }
+        note.indentLevel += 1;
 
         this.setState({
             notes: this.state.notes,
@@ -170,8 +161,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private unindentNote(noteIndex: number): void {
         const note = this.state.notes[noteIndex];
-        if (note.indentLevel !== undefined &&
-            note.indentLevel > 0) {
+        if (note.indentLevel > 0) {
             note.indentLevel -= 1;
         }
 
@@ -232,7 +222,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                 display: "flex",
                                                 flexDirection: "row",
                                                 alignItems: "center",
-                                                marginLeft: note.indentLevel === undefined ? "0px" : `${note.indentLevel * INDENT_STEP}px`,
+                                                marginLeft: `${note.indentLevel * INDENT_STEP}px`,
                                     
                                                 ...provided.draggableProps.style,
                                             }}
