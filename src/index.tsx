@@ -89,16 +89,6 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     }
 
     //
-    // Reorders a list of notes that has been drag and drop rearranged.
-    //
-    private reorder(notes: INote[], startIndex: number, endIndex: number) {
-        const result = Array.from(notes);
-        const [removed] = result.splice(startIndex, 1);
-        result.splice(endIndex, 0, removed);
-        return result;
-    }     
-
-    //
     // Event raised when drag and drop has completed.
     //
     private onDragEnd(result: DropResult, provided: ResponderProvided): void {
@@ -106,15 +96,16 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             return; // Dropped outside the list.
         }
 
-        const siblingNote = this.state.notes[result.destination.index];
-        const childNote = this.state.notes[result.source.index];
+        const notes = this.state.notes.slice();  // Clone notes.
+        const siblingNote = notes[result.destination.index];
+        const childNote = notes[result.source.index];
         childNote.indentLevel = siblingNote.indentLevel;
-      
-        const notes = this.reorder(
-            this.state.notes,
-            result.source.index,
-            result.destination.index
-        );
+
+        // Remove dragged note.
+        const [ removed ] = notes.splice(result.source.index, 1);
+
+        // Put the note back at the position where it was dropped.
+        notes.splice(result.destination.index, 0, removed);
       
         this.setState({
             notes: notes,
@@ -127,7 +118,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     private createNote(noteIndex: number): void {
         const existingNote = this.state.notes[noteIndex];
         const newNote = makeNote("", existingNote.indentLevel, true);
-        const notes = this.state.notes.slice();
+        const notes = this.state.notes.slice(); // Clone notes.
         notes.splice(noteIndex+1, 0, newNote);
         this.setState({
             notes: notes,
@@ -138,8 +129,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     // Deletes a note.
     //
     private deleteNote(noteIndex: number): void {
-        const notes = this.state.notes.slice();
-        const noteToDelete = this.state.notes[noteIndex];
+        const notes = this.state.notes.slice(); // Clone notes.
+        const noteToDelete = notes[noteIndex];
         const parentIndentLevel = noteToDelete.indentLevel;
         const childNoteIndex = noteIndex + 1;
         while (childNoteIndex < notes.length) {
@@ -148,9 +139,11 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                 break;
             }
 
-            notes.splice(childNoteIndex, 1);
+            // Remove child note.
+            notes.splice(childNoteIndex, 1); 
         }
         
+        // Remove the note the user wants to delete.
         notes.splice(noteIndex, 1);
         this.setState({
             notes: notes,
@@ -172,11 +165,13 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             return;
         }
 
+        const notes = this.state.notes.slice(); // Clone notes.
+
         //
         // Indent all the children of the node.
         //
-        for (let childIndex = noteIndex+1; childIndex < this.state.notes.length; ++childIndex) {
-            const child = this.state.notes[childIndex];
+        for (let childIndex = noteIndex+1; childIndex < notes.length; ++childIndex) {
+            const child = notes[childIndex];
             if (child.indentLevel > note.indentLevel) {
                 //
                 // This is a child!
@@ -195,7 +190,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         note.indentLevel += 1;
 
         this.setState({
-            notes: this.state.notes,
+            notes: notes,
         });
     }
 
@@ -203,7 +198,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     // Unindents a note one level.
     //
     private unindentNote(noteIndex: number): void {
-        const note = this.state.notes[noteIndex];
+        const notes = this.state.notes.slice(); // Clone notes.
+        const note = notes[noteIndex];
         if (note.indentLevel <= 0) {
             // Can't unindent less than a root note!
             return;
@@ -212,8 +208,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         //
         // Unindent all the children of the node.
         //
-        for (let childIndex = noteIndex+1; childIndex < this.state.notes.length; ++childIndex) {
-            const child = this.state.notes[childIndex];
+        for (let childIndex = noteIndex+1; childIndex < notes.length; ++childIndex) {
+            const child = notes[childIndex];
             if (child.indentLevel > note.indentLevel) {
                 //
                 // This is a child!
@@ -232,7 +228,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         note.indentLevel -= 1;
 
         this.setState({
-            notes: this.state.notes,
+            notes: notes,
         });
     }
 
@@ -241,7 +237,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private onFocusNext(noteIndex: number): void {
         if (noteIndex < this.state.notes.length-1) {
-            const notes = this.state.notes.slice();
+            const notes = this.state.notes.slice(); // Clone notes.
             const nextNote = notes[noteIndex+1];
             nextNote.hasFocus = true;
             this.setState({
@@ -255,7 +251,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private onFocusPrev(noteIndex: number): void {
         if (noteIndex > 0) {
-            const notes = this.state.notes.slice();
+            const notes = this.state.notes.slice(); // Clone notes.
             const prevNote = notes[noteIndex-1];
             prevNote.hasFocus = true;
             this.setState({
