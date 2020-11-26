@@ -171,9 +171,12 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private unindentNote(noteIndex: number): void {
         const note = this.state.notes[noteIndex];
-        if (note.indentLevel > 0) {
-            note.indentLevel -= 1;
+        if (note.indentLevel <= 0) {
+            // Can't unindent less than a root note!
+            return;
         }
+
+        note.indentLevel -= 1;
 
         this.setState({
             notes: this.state.notes,
