@@ -30,17 +30,14 @@ export interface IOutlinerState {
     notes: INote[];
 }
 
-const DEFAULT_NOTE: INote = {
-    id: v4(),
-    text: "",
-};
-
 function makeNote(text: string): INote {
     return {
         id: v4(),
         text: text,
     };
 }
+
+const DEFAULT_NOTES = [ makeNote("Note 1"), makeNote("Note 2"), makeNote("Note 3") ];
 
 export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
 
@@ -49,10 +46,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
 
         let notes = this.props.notes;
         if (notes === undefined) {
-            notes = [ makeNote("Note 1"), makeNote("Note 2"), makeNote("Note 3") ];
+            notes = DEFAULT_NOTES;
         }
         else if (notes.length === 0) {
-            notes = [ makeNote("Note 1"), makeNote("Note 2"), makeNote("Note 3") ];
+            notes = DEFAULT_NOTES;
         }
 
         this.state = {
@@ -97,7 +94,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, index: number) {
         if (evt.key === "Enter") {
             this.setState({
-                notes: this.state.notes.concat([DEFAULT_NOTE]),
+                notes: this.state.notes.concat([ makeNote("") ]),
             });
             evt.preventDefault();
         }
