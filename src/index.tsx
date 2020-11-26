@@ -108,6 +108,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     // Event raise on key down.
     //
     private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>, index: number) {
+
         if (evt.key === "Enter") {
             this.setState({
                 notes: this.state.notes.concat([ makeNote("") ]),
@@ -120,6 +121,28 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             notes.splice(index, 1);
             this.setState({
                 notes: notes,
+            });
+            evt.preventDefault();
+        }
+
+        if (evt.key === "Tab") {
+            const note = this.state.notes[index];
+            if (evt.shiftKey) {
+                if (note.indentLevel !== undefined &&
+                    note.indentLevel > 0) {
+                    note.indentLevel -= 1;
+                }
+            }
+            else {
+                if (note.indentLevel === undefined) {
+                    note.indentLevel = 1;
+                }
+                else {
+                    note.indentLevel += 1;
+                }
+            }
+            this.setState({
+                notes: this.state.notes,
             });
             evt.preventDefault();
         }
