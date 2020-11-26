@@ -152,7 +152,13 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             return; // Can't indent the first note!
         }
 
+        const prevNote = this.state.notes[noteIndex-1];
         const note = this.state.notes[noteIndex];
+        if (note.indentLevel > prevNote.indentLevel) {
+            // Can't indent more than one level below the prev node.
+            return;
+        }
+
         note.indentLevel += 1;
 
         this.setState({
