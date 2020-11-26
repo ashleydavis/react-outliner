@@ -20,6 +20,11 @@ export interface INote {
     // The indented level of the note, indicating it's position in the hierarchies notes.
     //
     indentLevel: number;
+
+    //
+    // Set to true to focus the editor for the note.
+    //
+    hasFocus?: boolean;
 }
 
 export interface IOutlinerProps {
@@ -42,11 +47,12 @@ export interface IOutlinerState {
 //
 let nextNoteId = 0;
 
-function makeNote(text: string, indentLevel: number): INote {
+function makeNote(text: string, indentLevel: number, hasFocus?: boolean): INote {
     return {
         id: (nextNoteId++).toString(),
         text: text,
         indentLevel: indentLevel,
+        hasFocus: hasFocus,
     };
 }
 
@@ -120,7 +126,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     //
     private createNote(noteIndex: number): void {
         const existingNote = this.state.notes[noteIndex];
-        const newNote = makeNote("", existingNote.indentLevel);
+        const newNote = makeNote("", existingNote.indentLevel, true);
         const notes = this.state.notes.slice();
         notes.splice(noteIndex+1, 0, newNote);
         this.setState({
@@ -266,10 +272,15 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                             </svg>
                                             {<NoteEditor
                                                 text={note.text}
+                                                hasFocus={note.hasFocus}
                                                 onCreateNote={() => this.createNote(index)}
                                                 onDeleteNote={() => this.deleteNote(index)}
                                                 onIndentNote={() => this.indentNote(index)}
                                                 onUnindentNote={() => this.unindentNote(index)}
+                                                onFocused={() => {
+                                                    // After we have requested a note to focused, clear the field.
+                                                    note.hasFocus = false;
+                                                }}
                                                 />}
                                         </div>
                                     )}

@@ -11,6 +11,11 @@ export interface INoteEditorProps {
     text: string;
 
     //
+    // Set to true to give this note the input focus.
+    //
+    hasFocus?: boolean;
+
+    //
     // Event raised to create a new note after this one.
     //
     onCreateNote: () => void;
@@ -29,6 +34,11 @@ export interface INoteEditorProps {
     // Event raised to unindent this note.
     //
     onUnindentNote: () => void;
+
+    //
+    // Event raised when note was focused.
+    //
+    onFocused: () => void;
 }
 
 export interface INoteEditorState {
@@ -36,12 +46,31 @@ export interface INoteEditorState {
 
 export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorState> {
 
+    //
+    // References the div element for the note editor.
+    //
+    private noteRef: React.RefObject<HTMLDivElement>;
+
     constructor(props: INoteEditorProps) {
         super(props);
 
         this.state = {};
 
         this.onKeyDown = this.onKeyDown.bind(this);
+
+        this.noteRef = React.createRef<HTMLDivElement>();
+    }
+
+    componentDidMount() {
+        if (this.props.hasFocus) {
+            if (this.noteRef.current) {
+                // TypeScript won't let me call "focus" on a div.
+                // I have to be sneaky and force it.
+                (this.noteRef.current as any).focus();
+
+                this.props.onFocused();
+            }
+        }
     }
 
     //
@@ -73,6 +102,7 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
     render() {
         return (
             <div
+                ref={this.noteRef}
                 className="note"
                 contentEditable
                 suppressContentEditableWarning
