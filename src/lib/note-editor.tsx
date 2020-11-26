@@ -2,6 +2,7 @@
 // The UI compoent for a single note.
 //
 
+import { eventNames } from "process";
 import * as React from "react";
 
 export interface INoteEditorProps {
@@ -39,6 +40,16 @@ export interface INoteEditorProps {
     // Event raised when note was focused.
     //
     onFocused: () => void;
+
+    //
+    // Event raised to focus the prev note.
+    //
+    onFocusPrev: () => void;
+
+    //
+    // Event raised to focus the next note.
+    //
+    onFocusNext: () => void;
 }
 
 export interface INoteEditorState {
@@ -63,13 +74,27 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
 
     componentDidMount() {
         if (this.props.hasFocus) {
-            if (this.noteRef.current) {
-                // TypeScript won't let me call "focus" on a div.
-                // I have to be sneaky and force it.
-                (this.noteRef.current as any).focus();
+            this.giveFocus();
+        }
+    }
 
-                this.props.onFocused();
-            }
+    shouldComponentUpdate(nextProps: INoteEditorProps, nextState: INoteEditorState) {
+        if (nextProps.hasFocus) {
+            this.giveFocus();
+        }
+        return true;
+    }
+
+    //
+    // Gives input focus to this note.
+    //
+    private giveFocus() {
+        if (this.noteRef.current) {
+            // TypeScript won't let me call "focus" on a div.
+            // I have to be sneaky and force it.
+            (this.noteRef.current as any).focus();
+
+            this.props.onFocused();
         }
     }
 
@@ -81,11 +106,13 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
         if (evt.key === "Enter") {
             this.props.onCreateNote();
             evt.preventDefault();
+            return;
         }
 
         if (evt.key === "Delete" && evt.ctrlKey) {
             this.props.onDeleteNote();
             evt.preventDefault();
+            return;
         }
 
         if (evt.key === "Tab") {
@@ -96,6 +123,19 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
                 this.props.onIndentNote();
             }
             evt.preventDefault();
+            return;
+        }
+
+        if (evt.key === "ArrowDown") {
+            this.props.onFocusNext();
+            evt.preventDefault();
+            return;
+        }
+
+        if (evt.key === "ArrowUp") {
+            this.props.onFocusPrev();
+            evt.preventDefault();
+            return;
         }
     }
 

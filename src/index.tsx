@@ -236,8 +236,35 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         });
     }
 
-    render() {
+    //
+    // Event raised to focus the next note.
+    //
+    private onFocusNext(noteIndex: number): void {
+        if (noteIndex < this.state.notes.length-1) {
+            const notes = this.state.notes.slice();
+            const nextNote = notes[noteIndex+1];
+            nextNote.hasFocus = true;
+            this.setState({
+                notes: notes,
+            });
+        }
+    }
 
+    //
+    // Event raised to focus the prev note.
+    //
+    private onFocusPrev(noteIndex: number): void {
+        if (noteIndex > 0) {
+            const notes = this.state.notes.slice();
+            const prevNote = notes[noteIndex-1];
+            prevNote.hasFocus = true;
+            this.setState({
+                notes: notes,
+            });
+        }
+    }
+
+    render() {
         return (
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
@@ -281,6 +308,8 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                     // After we have requested a note to focused, clear the field.
                                                     note.hasFocus = false;
                                                 }}
+                                                onFocusNext={() => this.onFocusNext(index)}
+                                                onFocusPrev={() => this.onFocusPrev(index)}
                                                 />}
                                         </div>
                                     )}
