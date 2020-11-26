@@ -19,37 +19,37 @@ export interface INoteEditorProps {
     //
     // Event raised to create a new note after this one.
     //
-    onCreateNote: () => void;
+    onCreateNote?: () => void;
 
     //
     // Event raised to delete the current note.
     //
-    onDeleteNote: () => void;
+    onDeleteNote?: () => void;
 
     //
     // Event raised to indent this note.
     //
-    onIndentNote: () => void;
+    onIndentNote?: () => void;
 
     //
     // Event raised to unindent this note.
     //
-    onUnindentNote: () => void;
+    onUnindentNote?: () => void;
 
     //
     // Event raised when note was focused.
     //
-    onFocused: () => void;
+    onFocused?: () => void;
 
     //
     // Event raised to focus the prev note.
     //
-    onFocusPrev: () => void;
+    onFocusPrev?: () => void;
 
     //
     // Event raised to focus the next note.
     //
-    onFocusNext: () => void;
+    onFocusNext?: () => void;
 }
 
 export interface INoteEditorState {
@@ -94,7 +94,9 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
             // I have to be sneaky and force it.
             (this.noteRef.current as any).focus();
 
-            this.props.onFocused();
+            if (this.props.onFocused) {
+                this.props.onFocused();
+            }
         }
     }
 
@@ -103,13 +105,13 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
     //
     private onKeyDown(evt: React.KeyboardEvent<HTMLDivElement>) {
 
-        if (evt.key === "Enter") {
+        if (this.props.onCreateNote && evt.key === "Enter") {
             this.props.onCreateNote();
             evt.preventDefault();
             return;
         }
 
-        if (evt.key === "Delete" && evt.ctrlKey) {
+        if (this.props.onDeleteNote && evt.key === "Delete" && evt.ctrlKey) {
             this.props.onDeleteNote();
             evt.preventDefault();
             return;
@@ -117,22 +119,26 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
 
         if (evt.key === "Tab") {
             if (evt.shiftKey) {
-                this.props.onUnindentNote();
+                if (this.props.onUnindentNote) {
+                    this.props.onUnindentNote();
+                }
             }
             else {
-                this.props.onIndentNote();
+                if (this.props.onIndentNote) {
+                    this.props.onIndentNote();
+                }
             }
             evt.preventDefault();
             return;
         }
 
-        if (evt.key === "ArrowDown") {
+        if (this.props.onFocusNext && evt.key === "ArrowDown") {
             this.props.onFocusNext();
             evt.preventDefault();
             return;
         }
 
-        if (evt.key === "ArrowUp") {
+        if (this.props.onFocusPrev && evt.key === "ArrowUp") {
             this.props.onFocusPrev();
             evt.preventDefault();
             return;
