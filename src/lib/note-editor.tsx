@@ -4,31 +4,11 @@
 
 import * as React from "react";
 
-//
-// Represents a note in the outliner.
-//
-export interface INote {
-    //
-    // Locally unique id for the note.
-    //
-    id: string;
-
+export interface INoteEditorProps {
     //
     // The text for the note.
     //
     text: string;
-
-    //
-    // The indented level of the note, indicating it's position in the hierarchies notes.
-    //
-    indentLevel: number;
-}
-
-export interface INoteEditorProps {
-    //
-    // The note currently being edited.
-    //
-    note: INote;
 
     //
     // Event raised to create a new note after this one.
@@ -105,7 +85,7 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
                     cursor: "text",
                 }}
                 >
-                {this.props.note.text}
+                {this.props.text}
             </div>
         );
     }

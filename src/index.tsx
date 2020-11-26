@@ -265,7 +265,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                                 <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
                                             </svg>
                                             {<NoteEditor
-                                                note={note}
+                                                text={note.text}
                                                 onCreateNote={() => this.createNote(index)}
                                                 onDeleteNote={() => this.deleteNote(index)}
                                                 onIndentNote={() => this.indentNote(index)}
