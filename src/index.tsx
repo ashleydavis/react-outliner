@@ -1,4 +1,3 @@
-import { v4 } from "node-uuid";
 import * as React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 
@@ -7,9 +6,10 @@ import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, D
 //
 export interface INote {
     //
-    // Unique id for the note.
+    // Locally unique id for the note.
     //
     id: string;
+
     //
     // The text for the note.
     //
@@ -35,9 +35,15 @@ export interface IOutlinerState {
     notes: INote[];
 }
 
+//
+// The ID of the next note to create.
+// This is just to make sure that new notes have an locally unique id.
+//
+let nextNoteId = 0;
+
 function makeNote(text: string, indentLevel: number): INote {
     return {
-        id: v4(),
+        id: (nextNoteId++).toString(),
         text: text,
         indentLevel: indentLevel,
     };
