@@ -33,6 +33,34 @@ import { Outliner } from "react-outliner";
 Use it in your `render` function:
 
 ```javascript
-    <Outliner />
+    <Outliner notes={notes} />
 ```
+
+For notes you can start with an empty array, you can create an array/tree of notes or you can load data from a database.
+
+Each note must have an id that is locally unique with in the notes data structure.
+
+Here's an example setup to get started:
+
+```javascript
+const notes = [
+    {
+        id: "1",
+        text: "A note",
+        children: [],
+    },
+    {
+        id: "2",
+        text: "Another note",
+        children: [
+            {
+                id: "3",
+                text: "A child note!",
+            },
+        ],
+    },
+
+];
+```
+
 
