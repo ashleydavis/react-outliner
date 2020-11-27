@@ -9,6 +9,11 @@ export interface IOutlinerProps {
     // Initial notes to be displayed in the outliner.
     //
     notes?: INote[];
+
+    //
+    // Event raised when notes have been updated.
+    //
+    onNotesUpdated?: (notes: INote[]) => void;
 }
 
 export interface IOutlinerState {
@@ -103,6 +108,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         const newNote = makeNote("", true);
         this.state.noteTree.addNote(parentNote, noteIndex, newNote);
         this.forceUpdate();
+
+        if (this.props.onNotesUpdated) {
+            this.props.onNotesUpdated(this.state.noteTree.getRootNote().children);
+        }
     }
 
     //
@@ -120,6 +129,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         }
 
         this.forceUpdate();
+
+        if (this.props.onNotesUpdated) {
+            this.props.onNotesUpdated(this.state.noteTree.getRootNote().children);
+        }
     }
 
     //
@@ -134,6 +147,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         this.state.noteTree.moveNote(parentNote, noteIndex, newParentNote, 0);
 
         this.forceUpdate();
+
+        if (this.props.onNotesUpdated) {
+            this.props.onNotesUpdated(this.state.noteTree.getRootNote().children);
+        }
     }
 
     //
@@ -144,6 +161,10 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             this.state.noteTree.moveNote(parentNote, childIndex, grandParent, 0);
             
             this.forceUpdate();
+
+            if (this.props.onNotesUpdated) {
+                this.props.onNotesUpdated(this.state.noteTree.getRootNote().children);
+            }
         }
     }
 
