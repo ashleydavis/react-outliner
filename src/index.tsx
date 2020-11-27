@@ -1,31 +1,8 @@
+import { chdir } from "process";
 import * as React from "react";
-import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot, DragStart } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult, ResponderProvided, DroppableProvided, DroppableStateSnapshot, DraggableProvided, DraggableStateSnapshot, DragStart, DragUpdate } from "react-beautiful-dnd";
 import { NoteEditor } from "./lib/note-editor";
-
-//
-// Represents a note in the outliner.
-//
-export interface INote {
-    //
-    // Locally unique id for the note.
-    //
-    id: string;
-
-    //
-    // The text for the note.
-    //
-    text: string;
-
-    //
-    // The indented level of the note, indicating it's position in the hierarchies notes.
-    //
-    indentLevel: number;
-
-    //
-    // Set to true to focus the editor for the note.
-    //
-    hasFocus?: boolean;
-}
+import { INote, INoteTree, NoteTree } from "./lib/note-tree";
 
 export interface IOutlinerProps {
     //
@@ -38,7 +15,7 @@ export interface IOutlinerState {
     //
     // Notes that are currently displayed in the outliner.
     //
-    notes: INote[];
+    noteTree: INoteTree; // A synthesized root note + an abstraction helps simplify the code.
 }
 
 //
@@ -47,25 +24,28 @@ export interface IOutlinerState {
 //
 let nextNoteId = 0;
 
-function makeNote(text: string, indentLevel: number, hasFocus?: boolean): INote {
+function makeNote(text: string, hasFocus?: boolean, children?: INote[]): INote {
+    nextNoteId += 1;
     return {
-        id: (nextNoteId++).toString(),
+        id: nextNoteId.toString(),
         text: text,
-        indentLevel: indentLevel,
         hasFocus: hasFocus,
+        children: children || [],
     };
 }
 
 const INDENT_STEP = 35;
 
-const DEFAULT_NOTES = [ 
-    makeNote("Note 1", 0), 
-    makeNote("Note 2", 0), 
-        makeNote("Child note 1", 1), 
-            makeNote("Grandchild note 1", 2), 
-            makeNote("Grandchild note 2", 2), 
-        makeNote("Child note 2", 1), 
-    makeNote("Note 3", 0),
+const DEFAULT_NOTES = [
+    makeNote("Note 1"), 
+    makeNote("Note 2", false, [
+        makeNote("Child note 1", false, [
+            makeNote("Grandchild note 1"), 
+            makeNote("Grandchild note 2"), 
+        ]),
+        makeNote("Child note 2"), 
+    ]), 
+    makeNote("Note 3"),
 ];
 
 export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
@@ -82,7 +62,11 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
         }
 
         this.state = {
-            notes: notes,
+            noteTree: new NoteTree({
+                id: "root",
+                text: "",
+                children: notes,
+            }),
         };
 
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -92,313 +76,212 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
     // Event raised when drag and drop has completed.
     //
     private onDragEnd(result: DropResult, provided: ResponderProvided): void {
+
         if (!result.destination) {
             return; // Dropped outside the list.
         }
 
-        const notes = this.state.notes.slice();  // Clone notes.
+        // Find the location of the dragged note.
+        let sourceNotes: INote[];
+        let sourceIndex: number;
 
-        // Clear the dragging flag.
-        const noteIndex = result.source.index;
-        const draggedNote = notes[noteIndex];
-
-        // Cound the number of children that should be dragged.
-        const parentIndentLevel = draggedNote.indentLevel;
-
-        let numChildren = 0;
-
-        for (let childIndex = noteIndex+1; childIndex < notes.length; ++childIndex) {
-            const childNote = notes[childIndex];
-            if (childNote.indentLevel > parentIndentLevel) {
-                // It is a child.
-                numChildren += 1;
-            }
-            else {
-                // No more children.
-                break;
-            }
+        const sourceParentNote = this.state.noteTree.getNote(result.source.droppableId);
+        if (sourceParentNote) {
+            sourceNotes = sourceParentNote.children;
+            sourceIndex = result.source.index;
+        }
+        else {
+            throw new Error(`Failed to find source parent note ${result.source.droppableId}`)
         }
 
-        // Place the dragged note at the indent level of the sibling it was dragged to.
-        const siblingNote = notes[result.destination.index];
-        const childNote = notes[result.source.index];
-        childNote.indentLevel = siblingNote.indentLevel;
+        // Find the location where the note was dropped.
+        let destNotes: INote[];
+        let destIndex: number;
+
+        const destParentNote = this.state.noteTree.getNote(result.destination.droppableId);
+        if (destParentNote) {
+            destNotes = destParentNote.children;
+            destIndex = result.destination.index;
+        }
+        else {
+            throw new Error(`Failed to find dest parent note ${result.destination.droppableId}`)
+        }
 
         // Remove dragged note (and children).
-        const removed = notes.splice(result.source.index, numChildren+1);
+        const [ removed ] = sourceNotes.splice(sourceIndex, 1);
 
         // Put the note back at the position where it was dropped.
-        notes.splice(result.destination.index - numChildren, 0, ...removed);
-      
-        this.setState({
-            notes: notes,
-        });                    
+        destNotes.splice(destIndex, 0, removed);
+
+        this.forceUpdate();
     }
 
     //
     // Creates a new note.
     //
-    private createNote(noteIndex: number): void {
-        const existingNote = this.state.notes[noteIndex];
-        const newNote = makeNote("", existingNote.indentLevel, true);
-        const notes = this.state.notes.slice(); // Clone notes.
-        notes.splice(noteIndex+1, 0, newNote);
-        this.setState({
-            notes: notes,
-        });
+    private createNote(parentNote: INote, noteIndex: number): void {
+        const newNote = makeNote("", true);
+        this.state.noteTree.addNote(parentNote, noteIndex, newNote);
+        this.forceUpdate();
     }
 
     //
     // Deletes a note.
     //
-    private deleteNote(noteIndex: number): void {
-        const notes = this.state.notes.slice(); // Clone notes.
-        const noteToDelete = notes[noteIndex];
-        const parentIndentLevel = noteToDelete.indentLevel;
-        const childNoteIndex = noteIndex + 1;
-        while (childNoteIndex < notes.length) {
-            const childNote = notes[childNoteIndex];
-            if (childNote.indentLevel <= parentIndentLevel) {
-                break;
-            }
+    private deleteNote(parentNote: INote, noteIndex: number): void {
 
-            // Remove child note.
-            notes.splice(childNoteIndex, 1); 
-        }
-        
+        const prevNote = this.state.noteTree.getPrevNote(parentNote, noteIndex);
+       
         // Remove the note the user wants to delete.
-        notes.splice(noteIndex, 1);
+        this.state.noteTree.removeNote(parentNote, noteIndex);
 
-        if (noteIndex > 0) {
-            // Now focus the previous note.
-            const prevNote = notes[noteIndex-1];
-            prevNote.hasFocus = true;
+        if (prevNote) {
+            prevNote.hasFocus = true; // Focus the previous note.
         }
 
-        this.setState({
-            notes: notes,
-        });
+        this.forceUpdate();
     }
 
     //
     // Indents a note one level.
     //
-    private indentNote(noteIndex: number): void {
+    private indentNote(parentNote: INote, noteIndex: number): void {
         if (noteIndex <= 0) {
             return; // Can't indent the first note!
         }
 
-        const prevNote = this.state.notes[noteIndex-1];
-        const note = this.state.notes[noteIndex];
-        if (note.indentLevel > prevNote.indentLevel) {
-            // Can't indent more than one level below the prev node.
-            return;
-        }
+        const newParentNote = parentNote.children[noteIndex-1];
+        this.state.noteTree.moveNote(parentNote, noteIndex, newParentNote, 0);
 
-        const notes = this.state.notes.slice(); // Clone notes.
-
-        //
-        // Indent all the children of the node.
-        //
-        for (let childIndex = noteIndex+1; childIndex < notes.length; ++childIndex) {
-            const child = notes[childIndex];
-            if (child.indentLevel > note.indentLevel) {
-                //
-                // This is a child!
-                // Indent it as as well as the parent.
-                //
-                child.indentLevel += 1;
-            }
-            else {
-                //
-                // No more children!
-                //
-                break;
-            }
-        }
-
-        note.indentLevel += 1;
-
-        this.setState({
-            notes: notes,
-        });
+        this.forceUpdate();
     }
 
     //
     // Unindents a note one level.
     //
-    private unindentNote(noteIndex: number): void {
-        const notes = this.state.notes.slice(); // Clone notes.
-        const note = notes[noteIndex];
-        if (note.indentLevel <= 0) {
-            // Can't unindent less than a root note!
-            return;
+    private unindentNote(parentNote: INote, childIndex: number, grandParent: INote | undefined): void {
+        if (grandParent) {
+            this.state.noteTree.moveNote(parentNote, childIndex, grandParent, 0);
+            
+            this.forceUpdate();
         }
-
-        //
-        // Unindent all the children of the node.
-        //
-        for (let childIndex = noteIndex+1; childIndex < notes.length; ++childIndex) {
-            const child = notes[childIndex];
-            if (child.indentLevel > note.indentLevel) {
-                //
-                // This is a child!
-                // Unindent it as as well as the parent.
-                //
-                child.indentLevel -= 1;
-            }
-            else {
-                //
-                // No more children!
-                //
-                break;
-            }
-        }
-
-        note.indentLevel -= 1;
-
-        this.setState({
-            notes: notes,
-        });
     }
 
     //
     // Event raised to focus the next note.
     //
-    private onFocusNext(noteIndex: number): void {
-        if (noteIndex < this.state.notes.length-1) {
-            const notes = this.state.notes.slice(); // Clone notes.
-            const nextNote = notes[noteIndex+1];
+    private onFocusNext(parentNote: INote, noteIndex: number, grandParent: INote | undefined, parentIndex: number | undefined): void {
+        const nextNote = this.state.noteTree.getNextNote(parentNote, noteIndex, grandParent, parentIndex);
+        if (nextNote) {
             nextNote.hasFocus = true;
-            this.setState({
-                notes: notes,
-            });
-        }
+            this.forceUpdate();
+        } 
     }
 
     //
     // Event raised to focus the prev note.
     //
-    private onFocusPrev(noteIndex: number): void {
-        if (noteIndex > 0) {
-            const notes = this.state.notes.slice(); // Clone notes.
-            const prevNote = notes[noteIndex-1];
+    private onFocusPrev(parentNote: INote, noteIndex: number): void {
+        const prevNote = this.state.noteTree.getPrevNote(parentNote, noteIndex);
+        if (prevNote) {
             prevNote.hasFocus = true;
-            this.setState({
-                notes: notes,
-            });
-        }
+            this.forceUpdate();
+        } 
     }
 
     //
-    // Renders a note (for use while dragging).
+    // Renders children of a note.
     //
-    private renderChildNote(note: INote, noteIndex: number) {
+    private renderChildren(parentNote: INote, indentLevel: number, grandParent: INote | undefined, parentIndex: number | undefined) {
         return (
-            <div
-                key={note.id}
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                }}
+            <Droppable 
+                droppableId={parentNote.id}
                 >
-                <div 
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginLeft: `${note.indentLevel * INDENT_STEP}px`,
-                    }}
-                    >
-                    <div>
-                        <svg 
-                            width="20" height="20" >
-                            <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
-                        </svg>
+                {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+                    <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        >
+                            
+                        {parentNote.children.map((child, childIndex) => (
+                            this.renderNote(child, childIndex, indentLevel, parentNote, grandParent, parentIndex)
+                        ))}
+                        {provided.placeholder}
                     </div>
-                    <NoteEditor text={note.text} />
-                </div>
-            </div>
-        );     
-    }
-
-    //
-    // Render the children of a note (only for dragging purposes).
-    //
-    private renderChildren(note: INote, noteIndex: number) {
-
-        const parentIndentLevel = note.indentLevel;
-        const renderedChildren: JSX.Element[] = [];
-        
-        for (let childIndex = noteIndex+1; childIndex < this.state.notes.length; ++childIndex) {
-            const childNote = this.state.notes[childIndex];
-            if (childNote.indentLevel > parentIndentLevel) {
-                // Still a child!
-                const renderedChild = this.renderChildNote(childNote, childIndex);
-                renderedChildren.push(renderedChild);
-            }
-            else {
-                // No more children!
-                break;
-            }
-        }
-
-        return renderedChildren;
+                )}
+            </Droppable>
+        );
     }
 
     //
     // Renders a note.
     //
-    private renderNote(note: INote, noteIndex: number, provided: DraggableProvided, snapshot: DraggableStateSnapshot) {
-        return (
-            <div
-                key={note.id}
-                {...provided.draggableProps}
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
+    private renderNote(note: INote, noteIndex: number, indentLevel: number, parent: INote, grandParent: INote | undefined, parentIndex: number | undefined) {
+        // For debugging.
+        // const colors = [ "red", "blue", "green", "yellow" ];
 
-                    ...provided.draggableProps.style,
+        return (
+            <div 
+                key={note.id}
+                style={{
+                    // backgroundColor: colors[indentLevel], // For debugging.
                 }}
                 >
-                <div 
-                    ref={provided.innerRef}
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginLeft: `${note.indentLevel * INDENT_STEP}px`,
-                    }}
+                <Draggable 
+                    key={note.id} 
+                    draggableId={note.id} 
+                    index={noteIndex}
                     >
-                    <div
-                        {...provided.dragHandleProps}
-                        >
-                        <svg 
-                            width="20" height="20" >
-                            <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
-                        </svg>
-                    </div>
-                    <NoteEditor
-                        text={note.text}
-                        hasFocus={note.hasFocus}
-                        onCreateNote={() => this.createNote(noteIndex)}
-                        onDeleteNote={() => this.deleteNote(noteIndex)}
-                        onIndentNote={() => this.indentNote(noteIndex)}
-                        onUnindentNote={() => this.unindentNote(noteIndex)}
-                        onFocused={() => {
-                            // After we have requested a note to focused, clear the field.
-                            note.hasFocus = false;
-                        }}
-                        onFocusNext={() => this.onFocusNext(noteIndex)}
-                        onFocusPrev={() => this.onFocusPrev(noteIndex)}
-                        />
-                </div>
-                <div>
-                    {snapshot.isDragging  && 
-                        // Render children while dragging so that the children are attached and dragged as well.
-                        this.renderChildren(note, noteIndex)
-                    }
-                </div>
+                    {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+                        <div
+                            key={note.id}
+                            {...provided.draggableProps}
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                
+                                ...provided.draggableProps.style,
+                            }}
+                            >
+                            <div 
+                                ref={provided.innerRef}
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    marginLeft: `${indentLevel * INDENT_STEP}px`,
+                                }}
+                                >
+                                <div
+                                    {...provided.dragHandleProps}
+                                    >
+                                    <svg 
+                                        width="20" height="20" >
+                                        <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
+                                    </svg>
+                                </div>
+                                <NoteEditor
+                                    text={note.text}
+                                    hasFocus={note.hasFocus}
+                                    onCreateNote={() => this.createNote(parent, noteIndex)}
+                                    onDeleteNote={() => this.deleteNote(parent, noteIndex)}
+                                    onIndentNote={() => this.indentNote(parent, noteIndex)}
+                                    onUnindentNote={() => this.unindentNote(parent, noteIndex, grandParent)}
+                                    onFocused={() => {
+                                        // After we have requested a note to focused, clear the field.
+                                        note.hasFocus = false;
+                                    }}
+                                    onFocusNext={() => this.onFocusNext(parent, noteIndex, grandParent, parentIndex)}
+                                    onFocusPrev={() => this.onFocusPrev(parent, noteIndex)}
+                                    />
+                            </div>
+
+                            {note.children.length > 0
+                                && this.renderChildren(note, indentLevel + 1, parent, noteIndex)
+                            }
+                        </div>
+                    )}
+                </Draggable>
             </div>
         );     
     }
@@ -408,27 +291,7 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
             <DragDropContext 
                 onDragEnd={this.onDragEnd}
                 >
-                <Droppable droppableId="droppable">
-                    {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-                        <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            >
-                            {this.state.notes.map((note, noteIndex) => (
-                                    <Draggable 
-                                        key={note.id} 
-                                        draggableId={note.id} 
-                                        index={noteIndex}
-                                        >
-                                        {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
-                                            this.renderNote(note, noteIndex, provided, snapshot)
-                                        )}
-                                    </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
+                {this.renderChildren(this.state.noteTree.getRootNote(), 0, undefined, undefined)}
             </DragDropContext>
         );
     }

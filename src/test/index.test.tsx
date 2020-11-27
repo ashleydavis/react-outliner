@@ -23,7 +23,7 @@ describe("outliner", () => {
         
         const element = shallow(
             <Outliner 
-                notes={[ { id: "1", text: "Hello computer!", indentLevel: 0 } ]}
+                notes={[ { id: "1", text: "Hello computer!", children: [] } ]}
                 />
         );
 
@@ -42,7 +42,7 @@ describe("outliner", () => {
         
         const element = shallow(
             <Outliner 
-                notes={[ { id: "1", text: "Note1", indentLevel: 0 }, { id: "2", text: "Note2", indentLevel: 0 } ]}
+                notes={[ { id: "1", text: "Note1", children: [] }, { id: "2", text: "Note2", children: [] } ]}
                 />
         );
 
