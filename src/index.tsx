@@ -24,7 +24,7 @@ export interface IOutlinerState {
 //
 let nextNoteId = 0;
 
-function makeNote(text: string, hasFocus?: boolean, children?: INote[]): INote {
+export function makeNote(text: string, hasFocus?: boolean, children?: INote[]): INote {
     nextNoteId += 1;
     return {
         id: nextNoteId.toString(),
@@ -36,36 +36,16 @@ function makeNote(text: string, hasFocus?: boolean, children?: INote[]): INote {
 
 const INDENT_STEP = 35;
 
-const DEFAULT_NOTES = [
-    makeNote("Note 1"), 
-    makeNote("Note 2", false, [
-        makeNote("Child note 1", false, [
-            makeNote("Grandchild note 1"), 
-            makeNote("Grandchild note 2"), 
-        ]),
-        makeNote("Child note 2"), 
-    ]), 
-    makeNote("Note 3"),
-];
-
 export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
 
     constructor(props: IOutlinerProps) {
         super(props);
 
-        let notes = this.props.notes;
-        if (notes === undefined) {
-            notes = DEFAULT_NOTES;
-        }
-        else if (notes.length === 0) {
-            notes = DEFAULT_NOTES;
-        }
-
         this.state = {
             noteTree: new NoteTree({
                 id: "root",
                 text: "",
-                children: notes,
+                children: this.props.notes || [],
             }),
         };
 
