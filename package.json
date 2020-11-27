@@ -1,6 +1,6 @@
 {
     "name": "react-outliner",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "A React UI component for typing notes.",
     "main": "build/index.js",
     "types": "build/index.d.ts",
@@ -39,6 +39,7 @@
     "dependencies": {
         "react": "^17.0.1",
         "react-beautiful-dnd": "^13.0.0",
+        "react-contenteditable": "^3.3.5",
         "react-dom": "^17.0.1"
     },
     "devDependencies": {

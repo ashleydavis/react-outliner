@@ -261,20 +261,36 @@ export class Outliner extends React.Component<IOutlinerProps, IOutlinerState> {
                                         <circle cx="10" cy="10" r="10" fill="#5c6062"></circle>
                                     </svg>
                                 </div>
-                                <NoteEditor
-                                    text={note.text}
-                                    hasFocus={note.hasFocus}
-                                    onCreateNote={() => this.createNote(parent, noteIndex)}
-                                    onDeleteNote={() => this.deleteNote(parent, noteIndex)}
-                                    onIndentNote={() => this.indentNote(parent, noteIndex)}
-                                    onUnindentNote={() => this.unindentNote(parent, noteIndex, grandParent)}
-                                    onFocused={() => {
-                                        // After we have requested a note to focused, clear the field.
-                                        note.hasFocus = false;
-                                    }}
-                                    onFocusNext={() => this.onFocusNext(parent, noteIndex, grandParent, parentIndex)}
-                                    onFocusPrev={() => this.onFocusPrev(parent, noteIndex)}
-                                    />
+                                <div
+                                    style={{
+                                        marginLeft: "15px",
+                                        marginRight: "5px",
+                                        flexGrow: 1,
+                                        outline: "none",
+                                        cursor: "text",
+                                    }}                               
+                                    >
+                                    <NoteEditor
+                                        text={note.text}
+                                        hasFocus={note.hasFocus}
+                                        onCreateNote={() => this.createNote(parent, noteIndex)}
+                                        onDeleteNote={() => this.deleteNote(parent, noteIndex)}
+                                        onIndentNote={() => this.indentNote(parent, noteIndex)}
+                                        onUnindentNote={() => this.unindentNote(parent, noteIndex, grandParent)}
+                                        onFocused={() => {
+                                            // After we have requested a note to focused, clear the field.
+                                            note.hasFocus = false;
+                                        }}
+                                        onFocusNext={() => this.onFocusNext(parent, noteIndex, grandParent, parentIndex)}
+                                        onFocusPrev={() => this.onFocusPrev(parent, noteIndex)}
+                                        onTextChange={text => {
+                                            note.text = text;
+                                            if (this.props.onNotesUpdated) {
+                                                this.props.onNotesUpdated(this.state.noteTree.getRootNote().children);
+                                            }
+                                        }}
+                                        />
+                                </div>
                             </div>
 
                             {note.children.length > 0

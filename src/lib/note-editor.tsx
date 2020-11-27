@@ -2,8 +2,8 @@
 // The UI compoent for a single note.
 //
 
-import { eventNames } from "process";
 import * as React from "react";
+import ContentEditable from "react-contenteditable";
 
 export interface INoteEditorProps {
     //
@@ -50,6 +50,11 @@ export interface INoteEditorProps {
     // Event raised to focus the next note.
     //
     onFocusNext?: () => void;
+
+    //
+    // Event raised when text has changed.
+    //
+    onTextChange?: (text: string) => void;
 }
 
 export interface INoteEditorState {
@@ -147,22 +152,16 @@ export class NoteEditor extends React.Component<INoteEditorProps, INoteEditorSta
 
     render() {
         return (
-            <div
-                ref={this.noteRef}
-                className="note"
-                contentEditable
-                suppressContentEditableWarning
+            <ContentEditable
+                innerRef={this.noteRef}
                 onKeyDown={this.onKeyDown}
-                style={{
-                    marginLeft: "15px",
-                    marginRight: "5px",
-                    flexGrow: 1,
-                    outline: "none",
-                    cursor: "text",
+                html={this.props.text}
+                onChange={evt => {
+                    if (this.props.onTextChange) {
+                        this.props.onTextChange(evt.target.value);
+                    }
                 }}
-                >
-                {this.props.text}
-            </div>
+                />
         );
     }
 }
