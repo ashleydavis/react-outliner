@@ -63,4 +63,8 @@ const notes = [
 ];
 ```
 
+## Example
+
+You can find a complete example in the `docs` subdirectory of the code repository.
+
 

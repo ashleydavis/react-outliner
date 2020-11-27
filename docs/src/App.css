@@ -1,0 +1,11 @@
+body {
+    background-color: #282c34;
+}
+
+.App {
+  margin-left: 15px;
+  margin-top: 30px;
+  min-height: 100vh;
+  font-size: 2em;
+  color: white;
+}
