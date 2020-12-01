@@ -18,8 +18,6 @@ Check Twitch for the next live stream:
 
 [https://www.twitch.tv/ashleydavis](https://www.twitch.tv/ashleydavis)
 
-##
-
 ## Use it
 
 Install it in your React application:
