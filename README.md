@@ -6,17 +6,9 @@ A Workflowy-style outliner UI component for React.
 
 Live demo here: [https://ashleydavis.github.io/react-outliner/](https://ashleydavis.github.io/react-outliner/)
 
-I live streamed development of this component on Twitch! See my YouTube channel to watch the recorded live stream:
+I live streamed development of this component on Twitch! See [my YouTube channel](https://www.youtube.com/c/codecapers) to watch the recorded live stream:
 
-[https://www.youtube.com/c/thedatawrangler](https://www.youtube.com/c/thedatawrangler)
-
-Follow me on Twitter for updates and announcements:
-
-[https://twitter.com/ashleydavis75](https://twitter.com/ashleydavis75)
-
-Check Twitch for the next live stream:
-
-[https://www.twitch.tv/ashleydavis](https://www.twitch.tv/ashleydavis)
+If you like this project, please star this repo and [support my work](https://www.codecapers.com.au/about#support-my-work)
 
 ## Use it
 
